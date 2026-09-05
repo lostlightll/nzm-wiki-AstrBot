@@ -35,6 +35,11 @@ The interpreter also owns knowledge routing. Weapon results contain a complete
 modifier type, and damage factor. The LLM is never expected to choose internal
 JSON files or reconstruct factor mappings itself.
 
+For registered damage settlements, Weapon Numerical V2 also projects
+`damage.base` from `HpCalScale` using the mode base attack (500 for LC and 400
+for TD). Recovery settlements retain ratio semantics and are not converted into
+damage.
+
 ## Skill
 
 The plugin bundles the AstrBot Skill `skills/nzm-wiki/SKILL.md`. It defines only

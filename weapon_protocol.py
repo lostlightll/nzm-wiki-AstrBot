@@ -7,6 +7,23 @@ import json
 from pathlib import Path
 from typing import Any
 
+_MODE_BASE_ATTACK = {"lc": 500, "td": 400}
+_DAMAGE_HEALTH_SETTLEMENTS = frozenset(
+    {
+        "Numerical.SettlementType.Health.WeaponDamage",
+        "Numerical.SettlementType.Health.MeleeWeaponDamage",
+        "Numerical.SettlementType.Health.WeaponExplosionDamage",
+        "Numerical.SettlementType.Health.WeaponSkillDamage",
+        "Numerical.SettlementType.Health.SkillDamage",
+        "Numerical.SettlementType.Health.DebuffDamage",
+        "Numerical.SettlementType.Health.IndirectDamage",
+        "Numerical.SettlementType.Health.EnvironmentDamage",
+        "Numerical.SettlementType.Health.CustomDamage",
+        "Numerical.SettlementType.Health.DeathExecute",
+        "Numerical.SettlementType.Health.DropEnvironmentDamage",
+    }
+)
+
 
 class WeaponProtocolError(RuntimeError):
     """Raised when committed Weapon V2 data violates its lookup contract."""
@@ -277,23 +294,44 @@ class WeaponProtocolResolver:
             key = f"{mode}:{numerical_id}_{level}"
             namespace = f"numerical-{mode}"
             raw, pointer = self._lock_raw(lock, namespace, key)
+            settlements = [
+                item.get("TagName")
+                for item in raw.get("Settlements", [])
+                if isinstance(item, dict) and item.get("TagName")
+            ]
+            health_scale = raw.get("HpCalScale")
+            health_base = raw.get("HpCalBase")
+            damage = {
+                "flesh": raw.get("FleshDamageBase"),
+                "hurtable": raw.get("HurtableBase"),
+                "impulse": raw.get("ImpulseBase"),
+                "toughness": raw.get("ToughnessBase"),
+            }
+            damage_settlement = next(
+                (
+                    settlement
+                    for settlement in settlements
+                    if settlement in _DAMAGE_HEALTH_SETTLEMENTS
+                ),
+                None,
+            )
+            if damage_settlement and isinstance(health_scale, (int, float)):
+                mode_base_attack = _MODE_BASE_ATTACK[mode]
+                damage["base"] = health_scale * mode_base_attack
+                damage["base_calculation"] = {
+                    "health_scale": health_scale,
+                    "mode_base_attack": mode_base_attack,
+                    "formula": "HpCalScale * mode_base_attack",
+                    "settlement": damage_settlement,
+                }
             result["numerical"] = {
                 "reference": {"id": numerical_id, "level": level, "table": mode},
-                "settlements": [
-                    item.get("TagName")
-                    for item in raw.get("Settlements", [])
-                    if isinstance(item, dict) and item.get("TagName")
-                ],
+                "settlements": settlements,
                 "health": {
-                    "scale": raw.get("HpCalScale"),
-                    "base": raw.get("HpCalBase"),
+                    "scale": health_scale,
+                    "base": health_base,
                 },
-                "damage": {
-                    "flesh": raw.get("FleshDamageBase"),
-                    "hurtable": raw.get("HurtableBase"),
-                    "impulse": raw.get("ImpulseBase"),
-                    "toughness": raw.get("ToughnessBase"),
-                },
+                "damage": damage,
                 "element_add_rate": raw.get("ElementAddRate"),
                 "enable_critical": raw.get("bEnableCriticalDamage"),
                 "enable_weakness": raw.get("EnableWeaknessDamage"),

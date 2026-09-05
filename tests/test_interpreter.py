@@ -63,6 +63,11 @@ damage_sources:
     source:
       numerical: { id: 120500340, level: 1 }
       asc_type_id: "339"
+  - id: healing-skill
+    name: 恢复技能
+    section: skill
+    source:
+      numerical: { id: 120500341, level: 1 }
 ---
 <WeaponSkill>
   <ActiveSkill name="协议主动">
@@ -122,6 +127,20 @@ damage_sources:
                                         {"TagName": "Numerical.SettlementType.Health.WeaponDamage"}
                                     ],
                                 }
+                            },
+                            "lc:120500341_1": {
+                                "raw": {
+                                    "HpCalScale": 0.1,
+                                    "HpCalBase": 5,
+                                    "Settlements": [
+                                        {
+                                            "TagName": (
+                                                "Numerical.SettlementType.Health."
+                                                "CharStandardHealing"
+                                            )
+                                        }
+                                    ],
+                                }
                             }
                         },
                         "numerical-td": {
@@ -140,6 +159,20 @@ damage_sources:
                                     "bDamageIgnoreShield": False,
                                     "Settlements": [
                                         {"TagName": "Numerical.SettlementType.Health.WeaponDamage"}
+                                    ],
+                                }
+                            },
+                            "td:120500341_1": {
+                                "raw": {
+                                    "HpCalScale": 0.1,
+                                    "HpCalBase": 5,
+                                    "Settlements": [
+                                        {
+                                            "TagName": (
+                                                "Numerical.SettlementType.Health."
+                                                "CharStandardHealing"
+                                            )
+                                        }
                                     ],
                                 }
                             }
@@ -296,6 +329,16 @@ damage_sources:
         self.assertAlmostEqual(lc["fire"]["rounds_per_minute"], 1333.3333333333335)
         self.assertEqual(lc["numerical"]["health"]["scale"], 0.07)
         self.assertEqual(td["numerical"]["health"]["scale"], 0.08)
+        self.assertEqual(lc["numerical"]["damage"]["base"], 35)
+        self.assertEqual(td["numerical"]["damage"]["base"], 32)
+        self.assertEqual(
+            lc["numerical"]["damage"]["base_calculation"]["mode_base_attack"],
+            500,
+        )
+        self.assertEqual(
+            td["numerical"]["damage"]["base_calculation"]["mode_base_attack"],
+            400,
+        )
         self.assertEqual(
             lc["provenance"][1]["json_pointer"],
             "/rows/numerical-lc/lc:120500340_1/raw",
@@ -307,6 +350,22 @@ damage_sources:
         self.assertNotIn("source_url", serialized)
         self.assertNotIn("http://", serialized)
         self.assertNotIn("https://", serialized)
+
+    def test_recovery_health_scale_is_not_converted_to_damage(self) -> None:
+        """Recovery settlements retain ratio semantics rather than mode damage."""
+        result = self.interpreter.query("协议武器恢复技能", max_results=6)
+        protocol = next(
+            item for item in result["evidence"] if item["kind"] == "weapon_protocol"
+        )
+
+        for mode in ("lc", "td"):
+            healing = next(
+                source
+                for source in protocol["modes"][mode]["damage_sources"]
+                if source["id"] == "healing-skill"
+            )
+            self.assertEqual(healing["numerical"]["health"]["scale"], 0.1)
+            self.assertNotIn("base", healing["numerical"]["damage"])
 
     def test_modifier_intent_resolves_value_and_factor_inside_interpreter(self) -> None:
         """Damage questions receive a structured factor without LLM path selection."""

@@ -24,6 +24,8 @@ class NzmWikiSkillTest(unittest.TestCase):
         self.assertIn("主动技能", body)
         self.assertIn("被动技能", body)
         self.assertIn("乘区", body)
+        self.assertIn("HpCalScale × 500", body)
+        self.assertIn("HpCalScale × 400", body)
 
         # Internal source selection belongs to Python protocol resolvers.
         self.assertNotIn("modifier-index-runtime.json", body)
