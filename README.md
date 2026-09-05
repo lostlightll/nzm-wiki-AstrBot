@@ -40,6 +40,10 @@ For registered damage settlements, Weapon Numerical V2 also projects
 for TD). Recovery settlements retain ratio semantics and are not converted into
 damage.
 
+`ElementAddRate` is projected as `element_status_application`: a per-attack
+probability of applying an elemental buff. It is explicitly marked as not being
+a damage multiplier and must never be included in base-damage or DPS formulas.
+
 ## Skill
 
 The plugin bundles the AstrBot Skill `skills/nzm-wiki/SKILL.md`. It defines only

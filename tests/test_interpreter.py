@@ -329,6 +329,21 @@ damage_sources:
         self.assertAlmostEqual(lc["fire"]["rounds_per_minute"], 1333.3333333333335)
         self.assertEqual(lc["numerical"]["health"]["scale"], 0.07)
         self.assertEqual(td["numerical"]["health"]["scale"], 0.08)
+        self.assertEqual(
+            lc["numerical"]["element_status_application"],
+            {
+                "source_field": "ElementAddRate",
+                "probability_per_attack": 0.051,
+                "semantics": "probability_to_apply_element_buff_on_each_attack",
+                "is_damage_multiplier": False,
+                "display_probability": "5.1%",
+            },
+        )
+        self.assertEqual(
+            td["numerical"]["element_status_application"]["display_probability"],
+            "6.1%",
+        )
+        self.assertNotIn("element_add_rate", lc["numerical"])
         self.assertEqual(lc["numerical"]["damage"]["base"], 35)
         self.assertEqual(td["numerical"]["damage"]["base"], 32)
         self.assertEqual(

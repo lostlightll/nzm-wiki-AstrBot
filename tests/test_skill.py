@@ -26,6 +26,8 @@ class NzmWikiSkillTest(unittest.TestCase):
         self.assertIn("乘区", body)
         self.assertIn("HpCalScale × 500", body)
         self.assertIn("HpCalScale × 400", body)
+        self.assertIn("ElementAddRate", body)
+        self.assertIn("严禁把伤害乘以 `1 + ElementAddRate`", body)
 
         # Internal source selection belongs to Python protocol resolvers.
         self.assertNotIn("modifier-index-runtime.json", body)

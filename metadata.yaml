@@ -1,7 +1,7 @@
 name: astrbot_plugin_nzm_wiki
 display_name: 逆战未来 Wiki 查询
 desc: 无状态读取 nzm-wiki 原始 MDX 与关联 JSON，为 AstrBot 返回可追溯的知识证据。
-version: v0.2.1
+version: v0.2.2
 author: xylem
 repo: ""
 astrbot_version: ">=4.27.4"

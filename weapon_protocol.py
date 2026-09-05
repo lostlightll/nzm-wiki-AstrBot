@@ -324,6 +324,16 @@ class WeaponProtocolResolver:
                     "formula": "HpCalScale * mode_base_attack",
                     "settlement": damage_settlement,
                 }
+            element_add_rate = raw.get("ElementAddRate")
+            element_status_application = {
+                "source_field": "ElementAddRate",
+                "probability_per_attack": element_add_rate,
+                "semantics": "probability_to_apply_element_buff_on_each_attack",
+                "is_damage_multiplier": False,
+            }
+            if isinstance(element_add_rate, (int, float)):
+                percentage = format(element_add_rate * 100, ".6g")
+                element_status_application["display_probability"] = f"{percentage}%"
             result["numerical"] = {
                 "reference": {"id": numerical_id, "level": level, "table": mode},
                 "settlements": settlements,
@@ -332,7 +342,7 @@ class WeaponProtocolResolver:
                     "base": health_base,
                 },
                 "damage": damage,
-                "element_add_rate": raw.get("ElementAddRate"),
+                "element_status_application": element_status_application,
                 "enable_critical": raw.get("bEnableCriticalDamage"),
                 "enable_weakness": raw.get("EnableWeaknessDamage"),
                 "weakness_damage_add_scale": raw.get("WeaknessDamageAddScale"),
